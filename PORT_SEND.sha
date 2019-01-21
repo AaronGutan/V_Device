@@ -1,0 +1,247 @@
+Make(delphi)
+ver(4.05 build 186)
+Add(MainForm,2953706,70,490)
+{
+ Width=588
+ Height=284
+ Caption="PORT"
+ link(onCreate,7444167:doEvent1,[(163,510)(163,517)])
+}
+Add(COM,4296500,308,259)
+{
+ link(onWrite,11884699:doText,[])
+ link(Port,11629120:Text,[(314,132)(534,132)(534,550)(426,550)])
+ link(BaudRate,1340124:Text,[(321,223)(363,223)])
+}
+Add(Edit,11629120,420,504)
+{
+ Left=135
+ Top=95
+ Visible=1
+ Name="PortNumber"
+ Text="1"
+ DataType=2
+}
+Add(Edit,1340124,357,154)
+{
+ Left=75
+ Top=95
+ Width=55
+ Name="BaudRate"
+ Text="9600"
+ DataType=2
+}
+Add(Label,1891548,7,21)
+{
+ Left=15
+ Top=25
+ Width=54
+ Height=17
+ Caption="COM порт"
+}
+Add(Label,8110499,7,56)
+{
+ Left=15
+ Top=95
+ Width=52
+ Height=17
+ Caption="Скорость"
+}
+Add(Button,317708,175,203)
+{
+ Left=135
+ Top=25
+ Caption="OPEN"
+ link(onClick,4296500:doOpen,[(257,209)(257,265)])
+}
+Add(Edit,3249852,77,294)
+{
+ Left=75
+ Top=125
+ Width=55
+ Name="DataToPort"
+ Text=""
+ MaxLenField=3
+ link(onEnter,10004011:doStrCat,[(142,307)(142,300)])
+}
+Add(Label,11884699,399,259)
+{
+ Left=100
+ Top=160
+ Width=100
+ Name="Stat"
+ Caption=""
+}
+Add(Label,12189468,7,90)
+{
+ Left=15
+ Top=130
+ Width=45
+ Height=17
+ Caption="Данные"
+}
+Add(Label,6338680,6,126)
+{
+ Left=10
+ Top=160
+ Width=86
+ Height=17
+ Caption="Передано (байт)"
+}
+Add(Label,6095720,7,161)
+{
+ Left=135
+ Top=125
+ Width=54
+ Height=17
+ Caption="Enter"
+}
+Add(StrCat,10004011,175,294)
+{
+ Str2="'\n'"
+ link(onStrCat,4296500:doWrite,[(246,300)(246,286)])
+ link(Str1,3249852:Text,[(181,282)(51,282)(51,343)(83,343)])
+}
+Add(ListBox,16769062,343,504)
+{
+ Left=75
+ Top=25
+ Height=60
+ DataType=1
+ link(onClick,11629120:doText,[(391,517)(391,510)])
+}
+Add(EnumCOM,7811162,266,546)
+{
+ OutType=0
+ link(onEnumPorts,16769062:doAdd,[(320,552)(320,510)])
+}
+Add(Hub,7444167,224,511)
+{
+ link(onEvent1,16769062:doClear,[])
+ link(onEvent2,7811162:doEnumPorts,[(252,524)(252,552)])
+}
+Add(Edit,6634885,602,280)
+{
+ Left=315
+ Top=145
+ Visible=1
+ Text="0"
+ link(onChange,8581311:doEvent1,[(641,286)(641,325)(583,325)(583,363)])
+ link(Str,12478803:Position,[])
+}
+Add(TrackBar,4280771,651,231)
+{
+ Left=315
+ Top=70
+ Width=220
+ Max=9
+ link(onPosition,2155713:doText,[(691,237)(691,220)(646,220)(646,286)])
+}
+Add(Button,14174304,602,133)
+{
+ Left=375
+ Top=175
+ Width=80
+ Height=40
+ Caption="Пуск"
+ Flat=0
+ link(onClick,5785101:doTimer,[])
+}
+Add(Button,9998248,602,175)
+{
+ Left=460
+ Top=175
+ Width=75
+ Height=40
+ Caption="Стоп"
+ Flat=0
+ link(onClick,5785101:doStop,[(653,181)(653,146)])
+}
+Add(StrCat,2277560,651,420)
+{
+ link(onStrCat,6667175:doStrCat,[(695,426)(695,462)(641,462)(641,498)])
+ link(Str1,6634885:Text,[(657,350)(608,350)])
+ link(Str2,2155713:Text,[(664,341)(657,341)])
+}
+Add(TrackBar,12478803,602,231)
+{
+ Left=315
+ Top=30
+ Width=220
+ Name="Dir"
+ Max=2
+ link(onPosition,6634885:doText,[(642,237)(642,220)(590,220)(590,286)])
+}
+Add(TrackBar,5653437,707,231)
+{
+ Left=315
+ Top=110
+ Width=220
+ Height=25
+ Max=9
+ link(onPosition,12888729:doText,[(746,237)(746,220)(698,220)(698,286)])
+}
+Add(Edit,2155713,651,280)
+{
+ Left=370
+ Top=145
+ Visible=1
+ Text="0"
+ link(onChange,8581311:doEvent4,[(688,286)(688,392)(583,392)(583,384)])
+ link(Str,4280771:Position,[])
+}
+Add(Edit,12888729,707,280)
+{
+ Left=430
+ Top=145
+ Visible=1
+ Text="0"
+ link(onChange,8581311:doEvent3,[(748,286)(748,395)(568,395)(568,377)])
+ link(Str,5653437:Position,[])
+}
+Add(StrCat,6667175,653,492)
+{
+ link(onStrCat,3249852:doText,[(748,498)(748,409)(65,409)(65,300)])
+ link(Str1,2277560:Result,[(659,458)(657,458)])
+ link(Str2,12888729:Text,[(666,477)(713,477)])
+}
+Add(Convertor,1411591,651,553)
+{
+ Digits=1
+}
+Add(Hub,8581311,595,357)
+{
+ InCount=4
+ OutCount=1
+ link(onEvent1,2277560:doStrCat,[(630,363)(630,426)])
+}
+Add(MMTimer,5785101,672,133)
+{
+ Interval=10
+ Enable=1
+ link(onTimer,8581311:doEvent2,[(747,139)(747,109)(567,109)(567,370)])
+}
+Add(Label,1687152,245,28)
+{
+ Left=245
+ Top=35
+ Width=75
+ Height=17
+ Caption="Направление:"
+}
+Add(Label,7430545,245,70)
+{
+ Left=245
+ Top=75
+ Width=55
+ Height=17
+ Caption="Скорость:"
+}
+Add(Label,5754684,245,112)
+{
+ Left=245
+ Top=115
+ Width=77
+ Height=17
+ Caption="Коэффициент:"
+}
