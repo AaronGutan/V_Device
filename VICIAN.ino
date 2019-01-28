@@ -1,6 +1,6 @@
 int dir = 0;                               //направление 0 - стоп, 1 - идти в end position, 2 - идти в start position
 int triga = 0;
-int MAXSPEED    = 15000;                   //максимальное кол-во STEP)
+int MAXSPEED    = 9000;                   //максимальное кол-во STEP)
 int GEAR_COUNT  = 9;                       //делитель   (макс. кол-во "передач")
 int GEAR;                                  //кол-во STEP в одной "передаче"
 
@@ -29,7 +29,7 @@ String inString = "";    //incoming str from COM
 //формат обмена = 3 цифры
 int Digit_1 = 0; //направление
 int Digit_2 = 0; //текущая "передача"
-int Digit_3 = 0; //зарезервировано
+int Digit_3 = 1; //зарезервировано
 
 #include <AccelStepper.h>
 
@@ -39,6 +39,9 @@ void setup()
 {
   stepper.setMaxSpeed(MAXSPEED);
   Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
 
   //режим пинов концевиков
   pinMode(EndMech_FINISH_Pin29, INPUT);
@@ -60,100 +63,55 @@ void setup()
   state_button_start = digitalRead(BUTTON_TO_START_Pin27);
   state_button_finish = digitalRead(BUTTON_TO_FINISH_Pin25);
 
+  led_work();
   led_stop();
 }
 
 void loop()
 {
 
-  //считываем состояние концевиков
-  start = digitalRead(EndMech_START_Pin27);
-  finish = digitalRead(EndMech_FINISH_Pin29);
-
-  //
-  if (start == LOW && dir == 1)
-  {
-    stepper.stop();
-    led_stop();
-    return;
-  }
-  if (finish == LOW && dir == -1)
-  {
-    stepper.stop();
-    led_stop();
-    return;
-  }
-
-  //считываем состояние кнопок
-  state_button_start = digitalRead(BUTTON_TO_START_Pin27);
-  state_button_finish = digitalRead(BUTTON_TO_FINISH_Pin25);
-
-  if (state_button_finish == LOW) {
-    dir = -1;
-  }
-
-  if (state_button_start == LOW) {
-    dir = 1;
-  }
+  button_click();
 
   if (Digit_1 == 0) {
     stepper.stop();
     led_stop();
+    return;
   }
   if (Digit_2 == 0) {
     stepper.stop();
     led_stop();
+    return;
   }
   if (Digit_3 == 0) {
     stepper.stop();
     led_stop();
-  }
-  else if (Digit_1 == 1) {
-    dir = -1;
-  }
-  else if (Digit_1 == 2) {
-    dir = 1;
-  }
-  //else {
-  //  stepper.stop();
-  //  led_stop();
-  //}
-
-  //при смене направления остановится
-  if (triga != dir) {
-    stepper.stop();
-    led_stop();
-  }
-
-  if (state_button_finish == HIGH) {
-    //с кнопок - поедем на половине максималки
-    dir = -1;
-    Digit_2 = MAXSPEED/2;
-    GEAR    = 1;
-  }
-  else if (state_button_start == HIGH) {
-    dir = 1;
-    Digit_2 = MAXSPEED/2;
-    GEAR    = 1;
-  }
-  else if (state_button_finish == HIGH && state_button_start == HIGH){
-    Digit_1 = 0;
-    Digit_2 = 0;
-    Digit_3 = 0;
-    stepper.stop();
     return;
-    led_stop();
+  }
+
+  GEAR = get_gear(MAXSPEED, GEAR_COUNT);
+  dir = get_dir();
+
+  if (get_permission()) {
+
+    //при смене направления остановится
+    if (dir != 0) {
+      if (triga != dir) {
+        stepper.stop();
+        led_stop();
+      }
+    }
+
+    stepper.setSpeed(long(dir) * long(GEAR) * long(Digit_2));
+    //stepper.setSpeed(long(dir) * long(9000));
+    stepper.runSpeed();
+    led_work();
   }
   else {
-    GEAR    = get_gear(MAXSPEED, GEAR_COUNT);
+    stepper.stop();
+    led_stop();
   }
-
+  
   triga = dir;
-
-  stepper.setSpeed(dir * GEAR * Digit_2);
-  stepper.runSpeed();
-  led_work();
-
 }
 
 void serialEvent() {
@@ -178,6 +136,13 @@ void serialEvent() {
         Digit_3 = map(inString.charAt(2), 48, 57, 1, 10) - 1;
 
       }
+      else if (inString.length() < 3) {
+
+        Digit_1 = 0;
+        Digit_2 = 0;
+        Digit_3 = 0;
+
+      }
       else {
         if (inString.startsWith("max")) {
           MAXSPEED = inString.substring(3).toInt();
@@ -200,11 +165,59 @@ int get_gear(int MAX_SPEED, int G_COUNT) {
 }
 
 int get_dir() {
-  
+
+  if(Digit_1 == 1) {
+    return  -1;
+  }
+  if(Digit_1 == 2) {
+    return  1;
+  }
+  return 0;
 }
 
-bool get_permission(){
+void button_click() {
+  //считываем состояние кнопок
+  state_button_start = digitalRead(BUTTON_TO_START_Pin27);
+  state_button_finish = digitalRead(BUTTON_TO_FINISH_Pin25);
+
   
+
+  if (state_button_finish == HIGH && state_button_start == LOW) {
+    //с кнопок - поедем на половине максималки
+    Digit_1 = 1;
+    Digit_2 = 3;
+    Digit_3 = 1;
+  }
+  else if (state_button_start == HIGH && state_button_finish == LOW) {
+    Digit_1 = 2;
+    Digit_2 = 3;
+    Digit_3 = 1;
+  }
+  else if (state_button_finish == HIGH && state_button_start == HIGH) {
+    Digit_1 = 0;
+    Digit_2 = 0;
+    Digit_3 = 0;
+  }
+}
+
+boolean get_permission() {
+  //считываем состояние концевиков
+  start = digitalRead(EndMech_START_Pin27);
+  finish = digitalRead(EndMech_FINISH_Pin29);
+
+  if (start == LOW && dir == 1)
+  {
+    stepper.stop();
+    led_stop();
+    return false;
+  }
+  if (finish == LOW && dir == -1)
+  {
+    stepper.stop();
+    led_stop();
+    return false;
+  }
+  return true;
 }
 
 void led_work() {
